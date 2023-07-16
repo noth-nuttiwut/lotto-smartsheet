@@ -160,6 +160,7 @@ export const useMainStore = create<OrderState>()(
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("setNumber :: ", setNumber)
+                const defaultColor = "#fefefe";
                 switch (OrderType) {
                     case "บน":
                         set((state) => ({
@@ -171,7 +172,7 @@ export const useMainStore = create<OrderState>()(
                                 top: nOrder?.price,
                                 bot: 0,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
@@ -186,7 +187,7 @@ export const useMainStore = create<OrderState>()(
                                 top: nOrder?.price,
                                 bot: 0,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
@@ -201,7 +202,7 @@ export const useMainStore = create<OrderState>()(
                                 top: nOrder?.price,
                                 bot: nOrder?.price,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
@@ -216,7 +217,7 @@ export const useMainStore = create<OrderState>()(
                                 top: 0,
                                 bot: nOrder?.price,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
@@ -231,7 +232,7 @@ export const useMainStore = create<OrderState>()(
                                 top: 0,
                                 bot: 0,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
@@ -248,7 +249,7 @@ export const useMainStore = create<OrderState>()(
                                     top: nOrder?.price,
                                     bot: 0,
                                     sum: 0,
-                                    color: "#232230"
+                                    color: defaultColor
                                 }
                             })]
                         }));
@@ -266,7 +267,7 @@ export const useMainStore = create<OrderState>()(
                                     top: nOrder?.price,
                                     bot: 0,
                                     sum: 0,
-                                    color: "#232230"
+                                    color: defaultColor
                                 }
                             })]
                         }));
@@ -284,7 +285,7 @@ export const useMainStore = create<OrderState>()(
                                     top: nOrder?.price,
                                     bot: nOrder?.price,
                                     sum: 0,
-                                    color: "#232230"
+                                    color: defaultColor
                                 }
                             })]
                         }));
@@ -301,7 +302,7 @@ export const useMainStore = create<OrderState>()(
                                     top: 0,
                                     bot: nOrder?.price,
                                     sum: 0,
-                                    color: "#232230"
+                                    color: defaultColor
                                 }
                             })]
                         }));
@@ -318,7 +319,7 @@ export const useMainStore = create<OrderState>()(
                                     top: 0,
                                     bot: 0,
                                     sum: 0,
-                                    color: "#232230"
+                                    color: defaultColor
                                 }
                             })]
                         }));
@@ -333,14 +334,15 @@ export const useMainStore = create<OrderState>()(
                                 top: nOrder?.price,
                                 bot: 0,
                                 sum: 0,
-                                color: "#232230"
+                                color: defaultColor
                             },]
                         }));
                         break;
                 }
             },
             summarize: () => {
-                const groupedOrders = [...get().orders].reduce((group: any, order: any) => {
+                const tempOrders = [...get().orders]
+                const groupedOrders = tempOrders.reduce((group: any, order: any) => {
                     const { name } = order;
                     group[name] = group[name] ?? [];
                     group[name].push(order);
@@ -383,11 +385,20 @@ export const useMainStore = create<OrderState>()(
                 const currentAmount = tempSummmaryOrder?.filter((el: any) => el.isPaid).reduce((accumulator: any, object: any) => {
                     return accumulator + object.sum;
                 }, 0)
+                
+                var orderCnt = 0
+                const addedSumOrder = tempOrders.map((order : Order, index : number) => {
+                    const prevName = index - 1 > 0 ? tempOrders[index-1]?.name : tempOrders[0]?.name
+                    orderCnt = order?.name === prevName ? orderCnt+1 : 1
+                    const resultSum : SummaryOrder [] = tempSummmaryOrder?.filter((elSum : SummaryOrder) => order?.name === elSum?.name)
+                    return resultSum.length > 0 && orderCnt === groupedOrders[order?.name].length ? { ...order, ...{ sum : resultSum[0]?.sum } } : { ...order }
+                })
 
                 set((state) => ({
+                    orders: addedSumOrder,
+                    summaryOrders: tempSummmaryOrder,
                     total,
-                    currentAmount,
-                    summaryOrders: tempSummmaryOrder
+                    currentAmount
                 }));
             }
         }),

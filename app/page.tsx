@@ -13,6 +13,7 @@ export default function Home() {
   const filterKeyword = useCustomStore(useMainStore, (state : any) => state.filterKeyword)
   const changeKeyword = useMainStore((state) => state.changeKeyword)
   const changeColor = useMainStore((state) => state.changeColor)
+  const removeOrder = useMainStore((state) => state.removeOrder)
 
   // const debouncedValue = useDebounce<Order[]>(orders, 10e3)
   // useEffect(() => {
@@ -103,13 +104,13 @@ export default function Home() {
               filterKeyword == "ทั้งหมด" ?
                 orders?.map((rowData : any, index: number) => {
                   return (
-                    <NRow rowData={rowData} key={rowData.id} index={index} />
+                    <NRow rowData={rowData} key={rowData.id} index={index} removeOrder={removeOrder}/>
                   )
                 })
                 :
                 orders?.filter((el : any) => el?.name == filterKeyword)?.map((rowData :any, index: number) => {
                   return (
-                    <NRow rowData={rowData} key={rowData.id} index={index} />
+                    <NRow rowData={rowData} key={rowData.id} index={index} removeOrder={removeOrder}/>
                   )
                 })
             }
