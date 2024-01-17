@@ -1,35 +1,36 @@
-export interface Order {
-    id: string;
-    name: string;
-    number: string;
-    tod: number;
-    top: number;
-    bot: number;
-    sum: number;
-    color: string;
+export type Order =  {
+    id: string,
+    name: string,
+    number: string,
+    tod: number,
+    top: number,
+    bot: number,
+    sum: number,
+    color: string
 }
 
-export interface NewOrder {
-    id: string;
-    name: string;
-    number: string;
-    price: number;
-    setType: string;
+export type NewOrder =  {
+    id: string,
+    name: string,
+    number: string,
+    price: number,
+    setType: string
+    color: string
 }
 
-export interface SummaryOrder {
-    id: string;
-    name: string;
-    number: string;
-    tod: number;
-    top: number;
-    bot: number;
-    sum: number;
-    isPaid: boolean;
+export type SummaryOrder =  {
+    id: string,
+    name: string,
+    number: string,
+    tod: number,
+    top: number,
+    bot: number,
+    sum: number,
+    isPaid: boolean
 }
 
 
-export interface ColorProfile {
-    name: string;
+export type ColorProfile =  {
+    name: string,
     color: string
 }

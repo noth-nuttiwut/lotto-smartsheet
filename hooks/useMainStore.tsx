@@ -7,6 +7,7 @@ interface OrderState {
     orders: Order[];
     newOrders: NewOrder;
     previewOrder: Order[];
+    previewOrderForUser: Order[];
     uniqOrder: Order[];
     isloaded: boolean;
     filterKeyword: string;
@@ -17,13 +18,16 @@ interface OrderState {
     setDefaultOrders: () => void;
     setSummaryOrders: (newObj: SummaryOrder[]) => void;
     addOrder: () => void;
+    addOrderForUser: () => void;
     removeOrder: (id: string) => void;
     editOrder: (newData: object, id: number) => void;
     changeColor: (newData: object, name: string) => void;
     editNewOrder: (newData: object) => void;
     onPaidOrder: (checked: boolean, id: number) => void;
-    makePreviewOrder: (OrderType: string) => void;
+    makePreviewOrder: (OrderType: string, defaultColor: string) => void;
+    makePreviewOrderForUser:(OrderType: string, defaultColor: string) => void;
     summarize: () => void;
+    clearPreviewOrder: () => void;
 }
 
 function nPermute(arr: string[]) {
@@ -64,9 +68,11 @@ export const useMainStore = create<OrderState>()(
                 number: "123",
                 price: 10,
                 setType: "",
+                color: "#fefefe"
             },
             filterKeyword: "ทั้งหมด",
             previewOrder: [],
+            previewOrderForUser: [],
             summaryOrders: [],
             total: 0,
             currentAmount: 0,
@@ -94,6 +100,7 @@ export const useMainStore = create<OrderState>()(
                     summaryOrders: newObj,
                 }));
             },
+
             onPaidOrder: (checked: boolean, index: number) => {
                 var temp = get().summaryOrders
                 temp[index] = { ...temp[index], ...{ isPaid: checked } }
@@ -112,12 +119,38 @@ export const useMainStore = create<OrderState>()(
                 }));
             },
             addOrder: () => {
+                let temp = [...get().orders, ...get().previewOrder]
                 set((state) => ({
-                    orders: [...state.orders, ...state.previewOrder],
+                    orders: temp,
                 }));
                 set((state) => ({
                     uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
                 }));
+                const uo = get().uniqOrder
+
+                // sort order
+                set((state) => ({
+                    orders: temp.sort((a : any, b:any) => (uo.findIndex((el : any) => el?.name == a?.name) - uo.findIndex((el : any)=> el?.name == b?.name))),
+                }));
+                get().summarize()
+
+            },
+            addOrderForUser: () => {
+                let temp = [...get().orders, ...get().previewOrderForUser]
+
+                set((state) => ({
+                    orders: temp,
+                }));
+                set((state) => ({
+                    uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
+                }));
+                const uo = get().uniqOrder
+
+                // sort order
+                set((state) => ({
+                    orders: temp.sort((a : any, b:any) => (uo.findIndex((el : any) => el?.name == a?.name) - uo.findIndex((el : any)=> el?.name == b?.name))),
+                }));
+                
                 get().summarize()
 
             },
@@ -152,15 +185,24 @@ export const useMainStore = create<OrderState>()(
                 set((state) => ({
                     newOrders: { ...state.newOrders, ...newData },
                 }));
-
-                get().makePreviewOrder(get().newOrders?.setType)
+                const newOrder = get().newOrders
+                try {
+                    get().makePreviewOrder(newOrder?.setType, newOrder?.color)
+                } catch (error) {
+                    console.log(error)
+                }
+                try {
+                    get().makePreviewOrderForUser(newOrder?.setType, newOrder?.color)
+                } catch (error) {
+                    console.log(error)
+                }
+                
             },
 
-            makePreviewOrder: (OrderType: string) => {
+            makePreviewOrder: (OrderType: string, defaultColor : string = "#fefefe") => {
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("setNumber :: ", setNumber)
-                const defaultColor = "#fefefe";
                 switch (OrderType) {
                     case "บน":
                         set((state) => ({
@@ -335,7 +377,192 @@ export const useMainStore = create<OrderState>()(
                                 bot: 0,
                                 sum: 0,
                                 color: defaultColor
+                            }
+                            ]
+                        }));
+                        break;
+                }
+            },
+            makePreviewOrderForUser: (OrderType: string, defaultColor : string = "#fefefe") => {
+                const nOrder = get().newOrders
+                const setNumber: string[] = nPermute(nOrder?.number.split(""))
+                console.log("ForUser : setNumber :: ", setNumber)
+                switch (OrderType) {
+                    case "บน":
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: 0,
+                                top: nOrder?.price,
+                                bot: 0,
+                                sum: 0,
+                                color: defaultColor
                             },]
+                        }));
+                        break;
+
+                    case "บน+โต๊ด":
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: nOrder?.price,
+                                top: nOrder?.price,
+                                bot: 0,
+                                sum: 0,
+                                color: defaultColor
+                            },]
+                        }));
+                        break;
+
+                    case "บน+ล่าง":
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: 0,
+                                top: nOrder?.price,
+                                bot: nOrder?.price,
+                                sum: 0,
+                                color: defaultColor
+                            },]
+                        }));
+                        break;
+
+                    case "ล่าง":
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: 0,
+                                top: 0,
+                                bot: nOrder?.price,
+                                sum: 0,
+                                color: defaultColor
+                            },]
+                        }));
+                        break;
+
+                    case "โต๊ด":
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: nOrder?.price,
+                                top: 0,
+                                bot: 0,
+                                sum: 0,
+                                color: defaultColor
+                            },]
+                        }));
+                        break;
+
+                    case "ชุด (บน)":
+
+                        set((state) => ({
+                            previewOrderForUser: [...setNumber.map(nEl => {
+                                return {
+                                    id: nanoid(),
+                                    name: nOrder?.name,
+                                    number: nEl,
+                                    tod: 0,
+                                    top: nOrder?.price,
+                                    bot: 0,
+                                    sum: 0,
+                                    color: defaultColor
+                                }
+                            })]
+                        }));
+                        break;
+
+                    case "ชุด (บน+โต๊ด)":
+
+                        set((state) => ({
+                            previewOrderForUser: [...setNumber.map(nEl => {
+                                return {
+                                    id: nanoid(),
+                                    name: nOrder?.name,
+                                    number: nEl,
+                                    tod: nOrder?.price,
+                                    top: nOrder?.price,
+                                    bot: 0,
+                                    sum: 0,
+                                    color: defaultColor
+                                }
+                            })]
+                        }));
+                        break;
+
+                    case "ชุด (บน+ล่าง)":
+
+                        set((state) => ({
+                            previewOrderForUser: [...setNumber.map(nEl => {
+                                return {
+                                    id: nanoid(),
+                                    name: nOrder?.name,
+                                    number: nEl,
+                                    tod: 0,
+                                    top: nOrder?.price,
+                                    bot: nOrder?.price,
+                                    sum: 0,
+                                    color: defaultColor
+                                }
+                            })]
+                        }));
+                        break;
+
+                    case "ชุด (ล่าง)":
+                        set((state) => ({
+                            previewOrderForUser: [...setNumber.map(nEl => {
+                                return {
+                                    id: nanoid(),
+                                    name: nOrder?.name,
+                                    number: nEl,
+                                    tod: 0,
+                                    top: 0,
+                                    bot: nOrder?.price,
+                                    sum: 0,
+                                    color: defaultColor
+                                }
+                            })]
+                        }));
+                        break;
+
+                    case "ชุด (โต๊ด)":
+                        set((state) => ({
+                            previewOrderForUser: [...setNumber.map(nEl => {
+                                return {
+                                    id: nanoid(),
+                                    name: nOrder?.name,
+                                    number: nEl,
+                                    tod: nOrder?.price,
+                                    top: 0,
+                                    bot: 0,
+                                    sum: 0,
+                                    color: defaultColor
+                                }
+                            })]
+                        }));
+                        break;
+                    default:
+                        set((state) => ({
+                            previewOrderForUser: [{
+                                id: nanoid(),
+                                name: nOrder?.name,
+                                number: nOrder?.number,
+                                tod: 0,
+                                top: nOrder?.price,
+                                bot: 0,
+                                sum: 0,
+                                color: defaultColor
+                            }
+                            ]
                         }));
                         break;
                 }
@@ -391,7 +618,7 @@ export const useMainStore = create<OrderState>()(
                     const prevName = index - 1 > 0 ? tempOrders[index-1]?.name : tempOrders[0]?.name
                     orderCnt = order?.name === prevName ? orderCnt+1 : 1
                     const resultSum : SummaryOrder [] = tempSummmaryOrder?.filter((elSum : SummaryOrder) => order?.name === elSum?.name)
-                    return resultSum.length > 0 && orderCnt === groupedOrders[order?.name].length ? { ...order, ...{ sum : resultSum[0]?.sum } } : { ...order }
+                    return resultSum.length > 0 && orderCnt === groupedOrders[order?.name].length ? { ...order, ...{ sum : resultSum[0]?.sum } } :  { ...order, ...{ sum : 0 } }
                 })
 
                 set((state) => ({
@@ -399,6 +626,11 @@ export const useMainStore = create<OrderState>()(
                     summaryOrders: tempSummmaryOrder,
                     total,
                     currentAmount
+                }));
+            },
+            clearPreviewOrder: () => {
+                set((state) => ({
+                    previewOrderForUser : []
                 }));
             }
         }),
