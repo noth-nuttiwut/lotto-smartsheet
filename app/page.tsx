@@ -7,7 +7,7 @@ import NRow from "../components/nrow";
 
 
 export default function Home() {
-  const orders = useCustomStore(useMainStore, (state: any) => state.orders)
+  const orders = useCustomStore(useMainStore, (state : any) => state.orders)
   const uniqOrder = useCustomStore(useMainStore, (state: any) => state.uniqOrder)
   const filterKeyword = useCustomStore(useMainStore, (state: any) => state.filterKeyword)
   const changeKeyword = useMainStore((state) => state.changeKeyword)

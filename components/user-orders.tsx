@@ -2,7 +2,6 @@
 import { useMainStore } from "@/hooks/useMainStore";
 import useCustomStore from "@/hooks/useCustomStore";
 import { useRef } from "react";
-import { defaultConfig } from "next/dist/server/config-shared";
 
 
 const UserOrders = ({ username , hColor }  : { username: string , hColor : string}) => {
@@ -16,9 +15,11 @@ const UserOrders = ({ username , hColor }  : { username: string , hColor : strin
     const editNewOrder = useMainStore((state) => state.editNewOrder)
     const makePreviewOrderForUser = useMainStore((state) => state.makePreviewOrderForUser)
     const addOrder = useMainStore((state) => state.addOrderForUser)
+    const summarize = useMainStore((state) => state.summarize)
     const clearPreviewOrder = useMainStore((state) => state.clearPreviewOrder)
 
     const historyOrder = orders?.filter(( el : any) => el.name == username)
+    
     const onOpenModal = () => {
         makePreviewOrderForUser(newOrders?.setType || "บน", hColor)
         const modalDialog: any = modalRef.current
@@ -38,6 +39,12 @@ const UserOrders = ({ username , hColor }  : { username: string , hColor : strin
     const handleRemoveOrder = (ev : React.MouseEvent<HTMLElement>, id : string) => {
         ev.preventDefault();
         removeOrder(id)
+    }
+
+
+    const handleOK = () => {
+        summarize()
+        console.log("Done ...")
     }
     return (
         <>
@@ -154,7 +161,7 @@ const UserOrders = ({ username , hColor }  : { username: string , hColor : strin
 
                     <div className="pt-8 flex justify-between items-center">
                         <button className="btn btn-wide btn-success font-extrabold text-green-900 text-xl" onClick={ (ev) => handleAddOrder(ev) }> เพิ่ม </button>
-                        <button className="btn btn-wide btn-info font-extrabold text-slate-100 text-xl" onClick={ () => console.log("close")  }> ตกลง </button>
+                        <button className="btn btn-wide btn-info font-extrabold text-slate-100 text-xl" onClick={ () =>  handleOK() }> ตกลง </button>
                     </div>
                 </form>
             </dialog>

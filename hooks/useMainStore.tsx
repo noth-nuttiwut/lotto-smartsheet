@@ -25,7 +25,7 @@ interface OrderState {
     editNewOrder: (newData: object) => void;
     onPaidOrder: (checked: boolean, id: number) => void;
     makePreviewOrder: (OrderType: string, defaultColor: string) => void;
-    makePreviewOrderForUser:(OrderType: string, defaultColor: string) => void;
+    makePreviewOrderForUser: (OrderType: string, defaultColor: string) => void;
     summarize: () => void;
     clearPreviewOrder: () => void;
 }
@@ -120,9 +120,31 @@ export const useMainStore = create<OrderState>()(
             },
             addOrder: () => {
                 let temp = [...get().orders, ...get().previewOrder]
+
+                // group same number into one order
+                const groupedByName: any = Object.groupBy(temp, ({name}) => name);
+                const final_result: any = Object.keys(groupedByName).map( (user_name)  => {
+
+                    const groupedNumber: any = Object.groupBy(groupedByName[user_name], ({number} : {number : string}) => number)
+
+                    const f_result = Object.keys(groupedNumber).map( (n)  => {
+                        return { ...groupedNumber[n][0], 
+                                ...{ 
+                                    top : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.top , 0),
+                                    bot : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.bot , 0), 
+                                    tod : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.tod , 0)   
+                                }
+                            }
+                    })
+                
+                    return f_result
+
+                }).flat()
+
                 set((state) => ({
-                    orders: temp,
+                    orders: final_result,
                 }));
+
                 set((state) => ({
                     uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
                 }));
@@ -130,7 +152,7 @@ export const useMainStore = create<OrderState>()(
 
                 // sort order
                 set((state) => ({
-                    orders: temp.sort((a : any, b:any) => (uo.findIndex((el : any) => el?.name == a?.name) - uo.findIndex((el : any)=> el?.name == b?.name))),
+                    orders: state.orders.sort((a: any, b: any) => (uo.findIndex((el: any) => el?.name == a?.name) - uo.findIndex((el: any) => el?.name == b?.name))),
                 }));
                 get().summarize()
 
@@ -138,19 +160,44 @@ export const useMainStore = create<OrderState>()(
             addOrderForUser: () => {
                 let temp = [...get().orders, ...get().previewOrderForUser]
 
+                // group same number into one order
+                const groupedByName: any = Object.groupBy(temp, ({name}) => name);
+                const final_result: any = Object.keys(groupedByName).map( (user_name)  => {
+
+                    const groupedNumber: any = Object.groupBy(groupedByName[user_name], ({number} : {number : string}) => number)
+
+                    const f_result = Object.keys(groupedNumber).map( (n)  => {
+                        return { ...groupedNumber[n][0], 
+                                ...{ 
+                                    top : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.top , 0),
+                                    bot : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.bot , 0), 
+                                    tod : groupedNumber[n].reduce((accumulator : any, object : any) => accumulator + object.tod , 0)   
+                                }
+                            }
+                    })
+                
+                    return f_result
+
+                }).flat()
+
+                console.log(final_result)
+
                 set((state) => ({
-                    orders: temp,
+                    orders: final_result,
                 }));
+
+                // get unique user
                 set((state) => ({
                     uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
                 }));
-                const uo = get().uniqOrder
+                
 
                 // sort order
+                const uo = get().uniqOrder
                 set((state) => ({
-                    orders: temp.sort((a : any, b:any) => (uo.findIndex((el : any) => el?.name == a?.name) - uo.findIndex((el : any)=> el?.name == b?.name))),
+                    orders: state.orders.sort((a: any, b: any) => (uo.findIndex((el: any) => el?.name == a?.name) - uo.findIndex((el: any) => el?.name == b?.name))),
                 }));
-                
+
                 get().summarize()
 
             },
@@ -181,6 +228,7 @@ export const useMainStore = create<OrderState>()(
                 }));
                 get().summarize()
             },
+
             editNewOrder: (newData: any) => {
                 set((state) => ({
                     newOrders: { ...state.newOrders, ...newData },
@@ -196,10 +244,10 @@ export const useMainStore = create<OrderState>()(
                 } catch (error) {
                     console.log(error)
                 }
-                
+
             },
 
-            makePreviewOrder: (OrderType: string, defaultColor : string = "#fefefe") => {
+            makePreviewOrder: (OrderType: string, defaultColor: string = "#fefefe") => {
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("setNumber :: ", setNumber)
@@ -383,7 +431,7 @@ export const useMainStore = create<OrderState>()(
                         break;
                 }
             },
-            makePreviewOrderForUser: (OrderType: string, defaultColor : string = "#fefefe") => {
+            makePreviewOrderForUser: (OrderType: string, defaultColor: string = "#fefefe") => {
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("ForUser : setNumber :: ", setNumber)
@@ -568,16 +616,12 @@ export const useMainStore = create<OrderState>()(
                 }
             },
             summarize: () => {
-                const tempOrders = [...get().orders]
-                const groupedOrders = tempOrders.reduce((group: any, order: any) => {
-                    const { name } = order;
-                    group[name] = group[name] ?? [];
-                    group[name].push(order);
-                    return group;
-                }, {});
+                const tempOrders: Order[] = [...get().orders]
 
-                var tempSummmaryOrder: any[] = []
-                Object.keys(groupedOrders).forEach((key: any) => {
+                const groupedOrders: any = Object.groupBy(tempOrders, ({ name }) => name)
+
+                var tempSummmaryOrder: any = []
+                Object.keys(groupedOrders).forEach((key: string) => {
                     if (key) {
                         const allTop = groupedOrders[key].reduce((accumulator: any, object: any) => {
                             return accumulator + object.top;
@@ -589,7 +633,7 @@ export const useMainStore = create<OrderState>()(
                             return accumulator + object.bot;
                         }, 0)
 
-                        const allNUm: string[] = groupedOrders[key].map((el : any) => el.number)
+                        const allNUm: string[] = groupedOrders[key].map((el: any) => el.number)
 
                         var temp: SummaryOrder = {
                             id: nanoid(),
@@ -604,21 +648,23 @@ export const useMainStore = create<OrderState>()(
                         tempSummmaryOrder.push(temp)
                     }
 
+
                 })
 
                 const total = tempSummmaryOrder?.reduce((accumulator: any, object: any) => {
                     return accumulator + object.sum;
                 }, 0)
+
                 const currentAmount = tempSummmaryOrder?.filter((el: any) => el.isPaid).reduce((accumulator: any, object: any) => {
                     return accumulator + object.sum;
                 }, 0)
-                
+
                 var orderCnt = 0
-                const addedSumOrder = tempOrders.map((order : Order, index : number) => {
-                    const prevName = index - 1 > 0 ? tempOrders[index-1]?.name : tempOrders[0]?.name
-                    orderCnt = order?.name === prevName ? orderCnt+1 : 1
-                    const resultSum : SummaryOrder [] = tempSummmaryOrder?.filter((elSum : SummaryOrder) => order?.name === elSum?.name)
-                    return resultSum.length > 0 && orderCnt === groupedOrders[order?.name].length ? { ...order, ...{ sum : resultSum[0]?.sum } } :  { ...order, ...{ sum : 0 } }
+                const addedSumOrder = tempOrders.map((order: Order, index: number) => {
+                    const prevName = index - 1 > 0 ? tempOrders[index - 1]?.name : tempOrders[0]?.name
+                    orderCnt = order?.name === prevName ? orderCnt + 1 : 1
+                    const resultSum: SummaryOrder[] = tempSummmaryOrder?.filter((elSum: SummaryOrder) => order?.name === elSum?.name)
+                    return resultSum.length > 0 && orderCnt === groupedOrders[order?.name].length ? { ...order, ...{ sum: resultSum[0]?.sum } } : { ...order, ...{ sum: 0 } }
                 })
 
                 set((state) => ({
@@ -630,7 +676,7 @@ export const useMainStore = create<OrderState>()(
             },
             clearPreviewOrder: () => {
                 set((state) => ({
-                    previewOrderForUser : []
+                    previewOrderForUser: []
                 }));
             }
         }),
