@@ -3,6 +3,20 @@ import { persist } from "zustand/middleware";
 import { Order, SummaryOrder, NewOrder } from '../model/order';
 import { nanoid } from 'nanoid'
 
+
+const groupBy = (items : any, key : string) => items.reduce(
+    (result : any, item : any) => ({
+      ...result,
+      [item[key]]: [
+        ...(result[item[key]] || []),
+        item,
+      ],
+    }), 
+    {},
+  );
+  
+
+
 interface OrderState {
     orders: Order[];
     newOrders: NewOrder;
@@ -122,10 +136,10 @@ export const useMainStore = create<OrderState>()(
                 let temp = [...get().orders, ...get().previewOrder]
 
                 // group same number into one order
-                const groupedByName: any = Object.groupBy(temp, ({name}) => name);
-                const final_result: any = Object.keys(groupedByName).map( (user_name)  => {
+                const orderByName: any = groupBy(temp, "name");
+                const final_result: any = Object.keys(orderByName).map( (user_name)  => {
 
-                    const groupedNumber: any = Object.groupBy(groupedByName[user_name], ({number} : {number : string}) => number)
+                    const groupedNumber: any = groupBy(orderByName[user_name], "number")
 
                     const f_result = Object.keys(groupedNumber).map( (n)  => {
                         return { ...groupedNumber[n][0], 
@@ -159,12 +173,12 @@ export const useMainStore = create<OrderState>()(
             },
             addOrderForUser: () => {
                 let temp = [...get().orders, ...get().previewOrderForUser]
-
+                
                 // group same number into one order
-                const groupedByName: any = Object.groupBy(temp, ({name}) => name);
-                const final_result: any = Object.keys(groupedByName).map( (user_name)  => {
+                const orderByName: any = groupBy(temp, "name");
+                const final_result: any = Object.keys(orderByName).map( (user_name)  => {
 
-                    const groupedNumber: any = Object.groupBy(groupedByName[user_name], ({number} : {number : string}) => number)
+                    const groupedNumber: any = groupBy(orderByName[user_name], "number")
 
                     const f_result = Object.keys(groupedNumber).map( (n)  => {
                         return { ...groupedNumber[n][0], 
@@ -618,7 +632,7 @@ export const useMainStore = create<OrderState>()(
             summarize: () => {
                 const tempOrders: Order[] = [...get().orders]
 
-                const groupedOrders: any = Object.groupBy(tempOrders, ({ name }) => name)
+                const groupedOrders: any = groupBy(tempOrders, "name")
 
                 var tempSummmaryOrder: any = []
                 Object.keys(groupedOrders).forEach((key: string) => {

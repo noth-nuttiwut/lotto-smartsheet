@@ -28,13 +28,13 @@ const AddSetNumbers = () => {
             <button className="btn btn-lg btn-success px-10" onClick={() => onOpenModal()} data-toggle="modal" data-target="#set_number_modal">เพิ่มชุด</button>
             <dialog id="set_number_modal" className="modal" ref={modalRef}>
                 <form method="dialog" className="modal-box gap-8 w-8/12 max-w-4xl">
-                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-2xl">✕</button>
+                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-2xl hover:bg-red-600">✕</button>
                     <h1 className="text-2xl font-bold text-accent py-4 border-b-2 border-slate-200">เพิ่มแบบชุด</h1>
                     <div className="flex gap-4 pt-4 justify-between">
                         <div className="flex gap-4 flex-col pt-8">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">ชื่อ</span>
+                                    <span className="label-text block mb-2 text-lg font-medium text-sky-700">ชื่อ</span>
                                 </label>
                                 <label className="input-group">
                                     <input type="text" placeholder="ชื่อ" className="input input-bordered w-full max-w-xs placeholder-slate-700" defaultValue={newOrders?.name} onChange={(ev) => editNewOrder({ name: ev.target.value })} />
@@ -42,7 +42,7 @@ const AddSetNumbers = () => {
                             </div>
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">หมายเลข</span>
+                                    <span className="label-text block mb-2 text-lg font-medium text-sky-700">หมายเลข</span>
                                 </label>
                                 <label className="input-group">
                                     <input type="text" placeholder="00" className="input input-bordered w-full max-w-xs placeholder-slate-700" minLength={2} maxLength={3} defaultValue={newOrders?.number} onChange={(ev) => editNewOrder({ number: ev.target.value })} />
@@ -50,7 +50,7 @@ const AddSetNumbers = () => {
                             </div>
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">จำนวนเงิน</span>
+                                    <span className="label-text block mb-2 text-lg font-medium text-sky-700">จำนวนเงิน</span>
                                 </label>
                                 <label className="input-group">
                                     <span>จำนวน</span>
@@ -58,7 +58,7 @@ const AddSetNumbers = () => {
                                     <span>THB</span>
                                 </label>
                             </div>
-                            <label className="block mb-2 text-lg font-medium text-gray-900 dark:text-info"> เลขชุด</label>
+                            <label className="block mb-2 text-lg font-medium text-sky-700"> เลขชุด</label>
                             <select className="select select-ghost w-full max-w-xs" defaultValue={newOrders?.setType} onChange={(ev) => editNewOrder({ setType: ev.target.value })}>
                                 <option disabled>เลือกชุด</option>
                                 <option>บน</option>
