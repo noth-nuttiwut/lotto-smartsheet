@@ -59,7 +59,8 @@
         "height": 800,
         "resizable": true,
         "title": "Lotto-SmartSheet",
-        "width": 1200
+        "width": 1200,
+        "contentProtected": false
       }
     ]
   }

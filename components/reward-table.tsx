@@ -21,7 +21,7 @@ export default function RewardsTable() {
         "top2Digit"
     ]
     return (
-        <div className="p-10">
+        <div className="p-8">
             <div className="overflow-x-auto">
                 <table className="table table-zebra">
 

@@ -19,39 +19,41 @@ export default function Payment() {
   const setRewardDigit = useRewardnHPStore((state) => state.setRewardDigit)
   const setAllWinOrders = useRewardnHPStore((state) => state.setAllWinOrders)
 
-  const nPermute = (arr: string[]) => {
-    var result: string[] = []
-    // currentSize should be invoked with the array size
-    function permutation(arr: string[], currentSize: number) {
+function nPermute(arr: string[]) {
+  var result: string[] = []
+  // currentSize should be invoked with the array size
+  function permutation(arr: string[], currentSize: number) {
       if (currentSize == 1) { // recursion base-case (end)
-        result.push(arr.join(""));
-        return;
+          result.push(arr.join(""));
+          return;
       }
 
       for (let i = 0; i < currentSize; i++) {
-        permutation(arr, currentSize - 1);
-        if (currentSize % 2 == 1) {
-          let temp = arr[0];
-          arr[0] = arr[currentSize - 1];
-          arr[currentSize - 1] = temp;
-        } else {
-          let temp = arr[i];
-          arr[i] = arr[currentSize - 1];
-          arr[currentSize - 1] = temp;
-        }
+          permutation(arr, currentSize - 1);
+          if (currentSize % 2 == 1) {
+              let temp = arr[0];
+              arr[0] = arr[currentSize - 1];
+              arr[currentSize - 1] = temp;
+          } else {
+              let temp = arr[i];
+              arr[i] = arr[currentSize - 1];
+              arr[currentSize - 1] = temp;
+          }
       }
-    }
-    permutation(arr, arr.length)
-    return [...new Set(result)]
-
   }
+  permutation(arr, arr.length)
+  return [...new Set(result)]
+
+}
 
   const winOrders = orders?.map((el: any) => {
     var winInfo = { win: false, buyAmount: ``, rewardPrice: 0, halfPayRate: false}
     var check_result = { ...el }
-    const setNumbers = nPermute(el?.number.split(""))
+    const setNumbers = nPermute([ ...el?.number ])
     // console.log(" --> ", el?.number, setNumbers, [top2digit, bot2digit, top3digit, bot3digit1, bot3digit2])
-    const hpNumbers = [...HPNumbers?.threeDigit[1].split(" "), ...HPNumbers?.twoDigit[1].split(" ") ]
+    var temp_hpNumbers = [...HPNumbers?.threeDigit[1].split(" "), ...HPNumbers?.twoDigit[1].split(" ") ]
+    const hpNumbers = temp_hpNumbers.map(hp_n => nPermute([ ...hp_n ])).flat()
+
     const payRate = hpNumbers.includes(el?.number) ? 0.5 : 1
 
     if (el?.top > 0 && el?.number == top2digit) { // บน
@@ -116,7 +118,7 @@ export default function Payment() {
 
   return (
     <>
-      <main className="flex min-h-screen flex-col items-center p-24">
+      <main className="flex min-h-screen flex-col items-center pt-20 pb-10 px-20">
         <div className='text-3xl font-semibold text-slate-100'> สรุปยอดคนถูก </div>
         <div className="flex justify-between gap-16">
           <div className="flex flex-col gap-6 pt-20">
@@ -126,7 +128,7 @@ export default function Payment() {
                   <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">เลข2 ตัว บน</span>
                 </label>
                 <label className="input-group">
-                  <input type="text" defaultValue={top2digit} placeholder="02" className="input border-slate-400 w-full max-w-xs" maxLength={2} onChange={(ev) => setRewardDigit(ev.target.value, "top2digit")} />
+                  <input type="text" defaultValue={top2digit} placeholder="02" className="input border-slate-400 w-full max-w-xs placeholder-slate-700 text-white" maxLength={2} onChange={(ev) => setRewardDigit(ev.target.value, "top2digit")} />
                 </label>
               </div>
 
@@ -134,7 +136,7 @@ export default function Payment() {
                 <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">เลข2 ตัว ล่าง</span>
               </label>
               <label className="input-group">
-                <input type="text" defaultValue={bot2digit} placeholder="56" className="input border-slate-400 w-full max-w-xs" maxLength={2} onChange={(ev) => setRewardDigit(ev.target.value, "bot2digit")} />
+                <input type="text" defaultValue={bot2digit} placeholder="56" className="input border-slate-400 w-full max-w-xs placeholder-slate-700 text-white" maxLength={2} onChange={(ev) => setRewardDigit(ev.target.value, "bot2digit")} />
               </label>
             </div>
 
@@ -144,7 +146,7 @@ export default function Payment() {
                 <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">เลข3 ตัว บน</span>
               </label>
               <label className="input-group">
-                <input type="text" defaultValue={top3digit} placeholder="123" className="input border-slate-400 w-full max-w-xs" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "top3digit")} />
+                <input type="text" defaultValue={top3digit} placeholder="123" className="input border-slate-400 w-full max-w-xs placeholder-slate-700 text-white" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "top3digit")} />
               </label>
             </div>
 
@@ -153,7 +155,7 @@ export default function Payment() {
                 <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">เลข3 ตัว ล่าง</span>
               </label>
               <label className="input-group">
-                <input type="text" defaultValue={bot3digit1} placeholder="056" className="input border-slate-400 w-full max-w-xs" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "bot3digit1")} />
+                <input type="text" defaultValue={bot3digit1} placeholder="056" className="input border-slate-400 w-full max-w-xs placeholder-slate-700 text-white" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "bot3digit1")} />
               </label>
             </div>
             <div className="form-control">
@@ -161,7 +163,7 @@ export default function Payment() {
                 <span className="label-text block mb-2 text-lg font-medium text-gray-900 dark:text-info">เลข3 ตัว ล่าง</span>
               </label>
               <label className="input-group">
-                <input type="text" defaultValue={bot3digit2} placeholder="456" className="input border-slate-400 w-full max-w-xs" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "bot3digit2")} />
+                <input type="text" defaultValue={bot3digit2} placeholder="456" className="input border-slate-400 w-full max-w-xs placeholder-slate-700 text-white" maxLength={3} onChange={(ev) => setRewardDigit(ev.target.value, "bot3digit2")} />
               </label>
             </div>
           </div>
