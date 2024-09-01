@@ -34,12 +34,13 @@ interface OrderState {
     addOrder: () => void;
     addOrderForUser: () => void;
     removeOrder: (id: string) => void;
+    removeAllOrder: () => void;
     editOrder: (newData: object, id: number) => void;
     changeColor: (newData: object, name: string) => void;
     editNewOrder: (newData: object) => void;
     onPaidOrder: (checked: boolean, id: number) => void;
-    makePreviewOrder: (OrderType: string, defaultColor: string) => void;
-    makePreviewOrderForUser: (OrderType: string, defaultColor: string) => void;
+    makePreviewOrder: (OrderType: string, timestmap: number, defaultColor: string) => void;
+    makePreviewOrderForUser: (OrderType: string, timestmap: number, defaultColor: string) => void;
     summarize: () => void;
     clearPreviewOrder: () => void;
 }
@@ -78,6 +79,7 @@ export const useMainStore = create<OrderState>()(
             uniqOrder: [],
             newOrders: {
                 id: nanoid(),
+                tm: Date.now(),
                 name: "Luffy",
                 number: "123",
                 price: 10,
@@ -138,9 +140,7 @@ export const useMainStore = create<OrderState>()(
                 // group same number into one order
                 const orderByName: any = groupBy(temp, "name");
                 const final_result: any = Object.keys(orderByName).map( (user_name)  => {
-
                     const groupedNumber: any = groupBy(orderByName[user_name], "number")
-
                     const f_result = Object.keys(groupedNumber).map( (n)  => {
                         return { ...groupedNumber[n][0], 
                                 ...{ 
@@ -162,12 +162,21 @@ export const useMainStore = create<OrderState>()(
                 set((state) => ({
                     uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
                 }));
-                const uo = get().uniqOrder
 
-                // sort order
+                // sort order by timestamp
+                set((state) => ({
+                    orders: state.orders.sort((a: any, b: any) => b?.tm - a?.tm),
+                }));
+
+                // sort order by name
+                const uo = get().uniqOrder
                 set((state) => ({
                     orders: state.orders.sort((a: any, b: any) => (uo.findIndex((el: any) => el?.name == a?.name) - uo.findIndex((el: any) => el?.name == b?.name))),
                 }));
+
+                
+
+
                 get().summarize()
 
             },
@@ -205,12 +214,18 @@ export const useMainStore = create<OrderState>()(
                     uniqOrder: [...new Map(state.orders.map(item => [item["name"], item])).values()].filter(el => el.name)
                 }));
                 
+                // sort order by timestamp
+                 set((state) => ({
+                    orders: state.orders.sort((a: any, b: any) => a?.tm - b?.tm),
+                }));
 
-                // sort order
+                // sort order by name
                 const uo = get().uniqOrder
                 set((state) => ({
                     orders: state.orders.sort((a: any, b: any) => (uo.findIndex((el: any) => el?.name == a?.name) - uo.findIndex((el: any) => el?.name == b?.name))),
                 }));
+
+                
 
                 get().summarize()
 
@@ -220,6 +235,13 @@ export const useMainStore = create<OrderState>()(
                 set((state) => ({
                     orders: removedData,
                     uniqOrder: [...new Map(removedData?.map(item => [item["name"], item])).values()].filter(el => el.name)
+                }));
+                get().summarize()
+            },
+            removeAllOrder: () => {
+                set((state) => ({
+                    orders: [],
+                    uniqOrder: []
                 }));
                 get().summarize()
             },
@@ -244,24 +266,26 @@ export const useMainStore = create<OrderState>()(
             },
 
             editNewOrder: (newData: any) => {
+                let tm  = Date.now()
                 set((state) => ({
-                    newOrders: { ...state.newOrders, ...newData },
+                    newOrders: { ...state.newOrders, ...newData , ...{ tm }},
                 }));
                 const newOrder = get().newOrders
+                 
                 try {
-                    get().makePreviewOrder(newOrder?.setType, newOrder?.color)
+                    get().makePreviewOrder(newOrder?.setType, tm, newOrder?.color)
                 } catch (error) {
                     console.log(error)
                 }
                 try {
-                    get().makePreviewOrderForUser(newOrder?.setType, newOrder?.color)
+                    get().makePreviewOrderForUser(newOrder?.setType, tm, newOrder?.color)
                 } catch (error) {
                     console.log(error)
                 }
 
             },
 
-            makePreviewOrder: (OrderType: string, defaultColor: string = "#fefefe") => {
+            makePreviewOrder: (OrderType: string, timestamp : number, defaultColor: string = "#fefefe") => {
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("setNumber :: ", setNumber)
@@ -270,6 +294,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -285,6 +310,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: nOrder?.price,
@@ -300,6 +326,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -315,6 +342,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -330,6 +358,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: nOrder?.price,
@@ -347,6 +376,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrder: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -365,6 +395,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrder: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: nOrder?.price,
@@ -383,6 +414,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrder: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -400,6 +432,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrder: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -417,6 +450,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrder: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: nOrder?.price,
@@ -432,6 +466,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrder: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -445,7 +480,7 @@ export const useMainStore = create<OrderState>()(
                         break;
                 }
             },
-            makePreviewOrderForUser: (OrderType: string, defaultColor: string = "#fefefe") => {
+            makePreviewOrderForUser: (OrderType: string, timestamp: number, defaultColor: string = "#fefefe") => {
                 const nOrder = get().newOrders
                 const setNumber: string[] = nPermute(nOrder?.number.split(""))
                 console.log("ForUser : setNumber :: ", setNumber)
@@ -454,6 +489,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -469,6 +505,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: nOrder?.price,
@@ -484,6 +521,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -499,6 +537,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,
@@ -514,6 +553,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: nOrder?.price,
@@ -531,6 +571,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrderForUser: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -549,6 +590,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrderForUser: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: nOrder?.price,
@@ -567,6 +609,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrderForUser: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -584,6 +627,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrderForUser: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: 0,
@@ -601,6 +645,7 @@ export const useMainStore = create<OrderState>()(
                             previewOrderForUser: [...setNumber.map(nEl => {
                                 return {
                                     id: nanoid(),
+                                    tm: timestamp,
                                     name: nOrder?.name,
                                     number: nEl,
                                     tod: nOrder?.price,
@@ -616,6 +661,7 @@ export const useMainStore = create<OrderState>()(
                         set((state) => ({
                             previewOrderForUser: [{
                                 id: nanoid(),
+                                tm: timestamp,
                                 name: nOrder?.name,
                                 number: nOrder?.number,
                                 tod: 0,

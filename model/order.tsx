@@ -1,5 +1,6 @@
 export type Order =  {
     id: string,
+    tm: number,
     name: string,
     number: string,
     tod: number,
@@ -11,6 +12,7 @@ export type Order =  {
 
 export type NewOrder =  {
     id: string,
+    tm: number,
     name: string,
     number: string,
     price: number,

@@ -21,7 +21,7 @@ const UserOrders = ({ username , hColor }  : { username: string , hColor : strin
     const historyOrder = orders?.filter(( el : any) => el.name == username)
     
     const onOpenModal = () => {
-        makePreviewOrderForUser(newOrders?.setType || "บน", hColor)
+        makePreviewOrderForUser(newOrders?.setType || "บน", Date.now(), hColor)
         const modalDialog: any = modalRef.current
         try {
             modalDialog.showModal()

@@ -26,7 +26,7 @@ export default function SummaryTable() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr key={"header_"}>
                         <td className="input input-bordered text-white input-secondary w-full max-w-xs text-right font-extrabold">{total?.toLocaleString('en-US')}</td>
                         <td className="input input-bordered text-success input-secondary w-full max-w-xs text-right font-extrabold">{nidProfit?.toLocaleString('en-US')}</td>
                         <td className="input input-bordered text-purple-500 input-secondary w-full max-w-xs text-right bg-neutral font-extrabold">{paiProfit?.toLocaleString('en-US')}</td>

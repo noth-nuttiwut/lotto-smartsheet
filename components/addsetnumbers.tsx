@@ -15,7 +15,7 @@ const AddSetNumbers = () => {
 
 
     const onOpenModal = () => {
-        makePreviewOrder(newOrders?.setType || "บน", "#fefefe")
+        makePreviewOrder(newOrders?.setType || "บน", Date.now(), "#fefefe")
         const modalDialog: any = modalRef.current
         try {
             modalDialog.showModal()
